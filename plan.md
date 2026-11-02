@@ -256,13 +256,10 @@ Keep the wording "to our knowledge". Before submitting, repeat the search once.
 | RAM / disk | 23.7 GB RAM; about 370 GB free on D: |
 | `.venv` | Python 3.11.9, torch 2.11.0+cu128, `pysodmetrics` 1.6.2 installed |
 | `SAM2UNet-COD.pth` | In `camo/weights/sam2unet_cod/`. File reads correctly, not yet run |
-| `sam2_hiera_large.pt` | Downloaded, 898 MB. Not needed for Gate 1 |
 | SINet-V2 | Repo cloned, weights in `camo/weights/sinetv2/` |
-| BiRefNet-COD | In `camo/weights/birefnet_cod/`, revision `6aa7470` |
-| SAM2-UNet maps | `camo/results/sam2unet_precomputed/maps.zip`, not extracted |
-| Git, LaTeX | Git installed, repo not initialised. No local LaTeX, so use Overleaf |
+| Git, LaTeX | Local git repo in the project root. Data, weights, third-party code and lecture notes are ignored. No local LaTeX, so use Overleaf |
 
-`SAM2UNet-COD.pth` is the most important file: with it, baseline A needs no training. The SAM2 weights matter less, because they're only needed to train from scratch, which this plan avoids.
+`SAM2UNet-COD.pth` is the most important file: with it, baseline A needs no training. See D-033 for what was deleted, and how to get it back.
 
 **Both benchmark models now run.** Inference is 7-10 images/s. Training speed and memory are still estimates until step 1.5.
 
@@ -484,7 +481,7 @@ Run `git init` at the start. Add `camo/data/`, `camo/weights/`, `.venv/` and che
 
 ### Tonight (Mon Nov 2)
 - [x] Download and verify the datasets and model weights.
-- [ ] Email ee604.iitk@gmail.com to confirm the topic and book office hours. Mention that the project builds on COD10K-C and VFM-CV.
+- [x] Confirm the topic with your professor. Approved.
 
 ### Tue Nov 3: prove the premise
 
@@ -558,7 +555,12 @@ SAM2-UNet reference from VFM-CV: 0.831 clean, noise 0.827 / 0.802 / 0.768, motio
 | **2. Quality meter** | Nov 4 | Relevant measure has Spearman \|rho\| of at least 0.7 with severity | Build the gate | Replace that measure. If time is short, drop it. The gate works with fewer inputs |
 | **3. Memory and speed** | Nov 3 | One training arm fits in about 2.5 hours | Keep 8 epochs | Reduce epochs, batch size, or train a smaller grid of arms |
 
-**Status, Nov 3:** Gate 1 **passed** (Section 2.5). Gates 2 and 3 are still to run. Training speed is unmeasured.
+**Status, Nov 3:** your professor approved the topic. All three gates **passed**:
+- **Gate 1:** see Section 2.5.
+- **Gate 2:** every measure tracked its damage on 100 validation images, with |rho| of 0.84 to 1.00.
+- **Gate 3:** arm E uses 5.3 GB at batch 6 and 1.0 it/s, so 8 epochs take about 1.7 hours with validation.
+
+Overnight training started at 01:12 on Nov 3, in the order B, E, D, C. Rerun `camo/scripts/train_all.ps1` to resume if it stops. This is ahead of the day plan in Section 6.
 
 ### If you fall behind, cut in this order
 1. Held-out corruption test

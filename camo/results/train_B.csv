@@ -1,0 +1,2 @@
+epoch,loss,val_dice,clean,motion_blur3,gaussian_noise3,jpeg4,drone,night,cctv,minutes
+-1,0.0,0.7132,0.9144,0.7895,0.7394,0.7574,0.671,0.5193,0.6015,3.6

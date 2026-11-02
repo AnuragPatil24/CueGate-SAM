@@ -336,6 +336,22 @@ Papers were downloaded and their text searched. "Key sections" means I read the 
 - **Caveat:** COD10K-C doesn't state its corruption order and trains at 384 px, so our match suggests the cause but doesn't prove what it did. Final tables must use all 2,026 images.
 - **Necessity:** This was the go or no-go decision for the training work.
 
+### D-032: Train with the input protocol, and on all four arms overnight
+- **Status:** Active. Your professor approved the topic on Nov 3.
+- **Decision:** Augmentation resizes, then corrupts. Train 8 epochs at batch 6, in the order B, E, D, C. Testing still covers both protocols.
+- **Reason:** The input protocol is where Gate 1 found real damage. Training on it should also cover the milder native case, which the final test will check.
+- **Proof (Measured):** Gate 2 passed with |rho| from 0.84 to 1.00 on 100 validation images. Gate 3 passed: arm E uses 5.28 GB at 1.01 it/s. The smoke test shows all four arms start exactly equal to SAM2-UNet, with about 4.5M of 216.7M parameters trained.
+- **Caveat:** The validation hold-out came from the set the published checkpoint trained on, so validation scores look better than test scores. They're used only to choose the epoch.
+- **Bug fixed before launch:** Persistent data workers would have repeated the same damage every epoch, so workers now restart each epoch.
+- **Necessity:** Results are needed with time left for the report.
+
+### D-033: Delete redundant files
+- **Status:** Active. You asked for the folder to stay tidy.
+- **Deleted:** The Drive archives, because their extracted copies were counted first. BiRefNet, because it's optional (D-019) and has no loader. The SAM2-Adapter clone (D-003). `sam2_hiera_large.pt` and `sam2_hiera_tiny.pt`, because `SAM2UNet-COD.pth` already contains the encoder and SAM2-UNet builds without them. The 60-image speed test files, and the precomputed maps, because the full clean run will check against published scores instead.
+- **Recovery:** Download IDs are in D-017 and D-018, and the links are in `plan.md` Section 10.
+- **Kept out of git:** data, weights, third-party code and `Notes/`. The lecture notes are course material, so they shouldn't go to a public GitHub repo.
+- **Necessity:** Saves about 9 GB, and keeps the repo small enough to submit.
+
 ---
 
 ## D. Open questions
@@ -345,6 +361,6 @@ Papers were downloaded and their text searched. "Key sections" means I read the 
 | Does SAM2-UNet really degrade? | **Answered in D-031:** yes under the input protocol, far less under the native one | Done, on 500 images |
 | Does corruption location explain the benchmark disagreement? | **Answered in D-031:** it reproduces both sets of numbers | Done, on 500 images |
 | Does stretching change scores? | **Answered in D-031:** no | Done, on 500 images |
-| Has your professor approved the topic? | Office hours, 15:30-16:30, ACES 302 | Nov 3 |
+| Has your professor approved the topic? | **Yes**, you confirmed this on Nov 3 | Done |
 | Does a published version of VFM-CV exist? | Repeat the search | Before submission |
-| Do the quality measures track severity? | Gate 2 | Nov 4 |
+| Do the quality measures track severity? | **Yes**, Gate 2 passed (D-032) | Done, on 100 images |
