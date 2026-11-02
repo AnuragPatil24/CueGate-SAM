@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+Notes/
+camo/data/
+camo/weights/
+camo/third_party/
