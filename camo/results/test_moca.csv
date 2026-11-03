@@ -1,0 +1,5 @@
+model,protocol,corruption,severity,images,dice_raw,iou_raw,mae_raw,dice_stretched,iou_stretched,mae_stretched,sm,peak_prob,top1,img_per_s
+sam2unet,input,clean,0,4691,0.7465,0.6629,0.0153,0.7465,0.6629,0.0154,0.8415,0.9975,0.9244,9.8
+arm_B,input,clean,0,4691,0.7667,0.682,0.0155,0.7667,0.682,0.0155,0.8546,0.9993,0.9472,9.7
+arm_C,input,clean,0,4691,0.7667,0.6827,0.0157,0.7667,0.6826,0.0157,0.8549,0.9991,0.942,9.4
+arm_E,input,clean,0,4691,0.7672,0.6828,0.0159,0.7671,0.6828,0.0159,0.8549,0.999,0.9445,9.3

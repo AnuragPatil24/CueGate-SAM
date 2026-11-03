@@ -24,8 +24,8 @@ from metrics import binary_scores, presence_score
 from models import new_sam2unet
 
 EXAMPLES = os.path.join(ROOT, "demo_examples")
-# Top-1% score that keeps 95% detection on COD10K, from results/tables/presence.csv.
-PRESENCE_THRESHOLD = 0.5
+# Top-1% score that keeps 95% detection of clean COD10K test images (scripts/pick_examples.py).
+PRESENCE_THRESHOLD = 0.7841
 PRESETS = {"Clean": (0, 0, 0, 0, 0), "Drone": (3, 0, 0, 0, 3), "Night": (0, 0, 4, 3, 2), "CCTV": (0, 3, 0, 2, 4)}
 CAMERAS = {"Low-resolution camera": "input", "High-resolution camera": "native"}
 CUE_COLOURS = {"detail": "#2a78d6", "colour": "#eb6834", "texture": "#1baf7a", "structure": "#6250d6"}

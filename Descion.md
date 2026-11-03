@@ -382,6 +382,24 @@ Papers were downloaded and their text searched. "Key sections" means I read the 
 - **Fact:** All 4,691 MoCA-Mask masks contain an object, so no frames need excluding.
 - **Necessity:** Storing `top1` during the main run avoids a second pass over the positives.
 
+### D-038: Final test results, and what can be claimed
+- **Status:** Active. The evaluation finished at about 19:45 on Nov 3. A pause of about 80 minutes, probably sleep, was absorbed by the resumable runner.
+- **Proof:** `camo/results/tables/*.csv` from `analyze.py`, and figures in `camo/results/figures`. All CIs are paired bootstraps (10,000 resamples). MoCA resamples whole videos.
+- **COD10K input, mean over 14 damaged conditions:** B − A +0.050 [0.047, 0.052]. R − A −0.0015 [−0.003, −0.000]. C, D and E − B are all about +0.005, with intervals above zero. E − C −0.000 and E − D +0.000, both with intervals spanning zero. Clean Dice: A 0.832, E 0.833.
+- **CAMO:** E − B +0.0055 [0.003, 0.008], E − C +0.005 [0.002, 0.008], E − D +0.004 [0.001, 0.007]. **NC4K:** E − B +0.006 [0.005, 0.008].
+- **Native protocol:** A keeps 0.956 of clean Dice, against 0.817 under input. B − A +0.016. E − B −0.001 [−0.002, −0.000].
+- **MoCA-Mask:** B − A +0.020 [0.007, 0.034]. On the blurriest quartile, +0.035 [0.015, 0.058]. E − B +0.0005, with an interval spanning zero.
+- **Gate explanation:** colour weight rises from 0.20 to 0.45 with JPEG severity. Removing the colour cue costs the most under JPEG (−0.015), drone (−0.021), night (−0.025) and CCTV (−0.027). Structure matches too. Detail doesn't: the gate raises it under blur and darkening, but removing it changes almost nothing.
+- **Presence:** against backgrounds, AUROC is 0.92 to 0.93 on clean images. At night it's 0.76 for E, against 0.63 for A. Against visible animals it's about 0.1 to 0.3, so the models find animals, not camouflage.
+- **Claims we can make:** (1) Corruption location explains the disagreement between benchmarks, now on all 2,026 images. (2) Augmentation is most of the gain. (3) Classical cues add a small, significant gain on three synthetic test sets, but not at full resolution or on real video. (4) The gate beats the ungated arms on CAMO only. Its weights partly match cue usefulness, which makes it an explanation tool. (5) Simple classical restoration doesn't help.
+- **Claims we can't make:** that the gate improves accuracy in general, or that cues help on real footage.
+
+### D-039: Demo examples and the qualitative figure are selected, and say so
+- **Status:** Active.
+- **Decision:** `scripts/pick_examples.py` takes the COD10K image per habitat where E gains most over A across the combined conditions, among images E segments well when clean. It also takes the image where E loses most, one background, and the blurriest MoCA frame. They're copied to `camo/demo_examples`, about 2 MB, which is small enough to keep in git.
+- **Reason:** A demo needs clear cases, but picking only wins would mislead, so the failure row stays in both the demo and the figure. The caption must say the rows were selected.
+- **Presence threshold in the demo:** 0.784, the 5th percentile of E's `top1` on clean COD10K, so 95% of camouflaged images are detected.
+
 ---
 
 ## D. Open questions

@@ -1,0 +1,23 @@
+,comparison,condition,gain,low,high,excludes_zero
+0,arm_B - sam2unet,cctv,0.0179,0.0137,0.0223,True
+1,arm_B - sam2unet,drone,0.0159,0.0117,0.0204,True
+2,arm_B - sam2unet,gaussian_noise_3,0.0095,0.0059,0.0132,True
+3,arm_B - sam2unet,gaussian_noise_5,0.0157,0.0119,0.0197,True
+4,arm_B - sam2unet,jpeg_3,0.0053,0.0026,0.0083,True
+5,arm_B - sam2unet,jpeg_5,0.0085,0.0049,0.0122,True
+6,arm_B - sam2unet,motion_blur_3,0.0119,0.0078,0.0159,True
+7,arm_B - sam2unet,motion_blur_5,0.0216,0.0172,0.0262,True
+8,arm_B - sam2unet,night,0.0341,0.0285,0.0398,True
+9,arm_B - sam2unet,mean_corrupted,0.0156,0.0131,0.0181,True
+10,arm_B - sam2unet,clean,0.003,0.0003,0.0058,True
+11,arm_E - arm_B,cctv,0.0002,-0.0016,0.002,False
+12,arm_E - arm_B,drone,-0.0009,-0.003,0.001,False
+13,arm_E - arm_B,gaussian_noise_3,-0.0013,-0.0031,0.0005,False
+14,arm_E - arm_B,gaussian_noise_5,-0.001,-0.003,0.0008,False
+15,arm_E - arm_B,jpeg_3,-0.0021,-0.0037,-0.0006,True
+16,arm_E - arm_B,jpeg_5,-0.0026,-0.0044,-0.0009,True
+17,arm_E - arm_B,motion_blur_3,-0.0007,-0.0023,0.001,False
+18,arm_E - arm_B,motion_blur_5,-0.0007,-0.0024,0.001,False
+19,arm_E - arm_B,night,-0.0001,-0.0023,0.0021,False
+20,arm_E - arm_B,mean_corrupted,-0.001,-0.0019,-0.0001,True
+21,arm_E - arm_B,clean,-0.0014,-0.003,0.0001,False

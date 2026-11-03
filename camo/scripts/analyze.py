@@ -53,7 +53,8 @@ def dice_table(runs, protocol):
             table.setdefault(condition, {})[model] = scores.mean()
     table = pd.DataFrame(table).T
     table = table[[a for a in ARMS if a in table]]
-    corrupted = table.drop(index="clean", errors="ignore")
+    # Average only conditions every model has, so the means stay comparable.
+    corrupted = table.drop(index="clean", errors="ignore").dropna()
     table.loc["mean_corrupted"] = corrupted.mean()
     if "clean" in table.index:
         table.loc["retention"] = table.loc["mean_corrupted"] / table.loc["clean"]
