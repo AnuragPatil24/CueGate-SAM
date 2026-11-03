@@ -413,9 +413,10 @@ All arms start from `SAM2UNet-COD.pth`, so the only difference is the listed cha
 - COD10K non-camouflaged, 1,974 images: presence check, clean and severity 3.
 
 **Benchmark grid**
-- Clean, 8 corruptions at severities 1, 3 and 5, and 3 combined conditions, giving **28 conditions**, or 56,728 images per model.
-- SINet-V2 additionally runs severities 2 and 4 overnight to compare with COD10K-C.
-- BiRefNet-COD is optional. Check its input size and speed first, and run it on clean and severity 3 only if it's slow.
+- Input protocol: clean, 8 corruptions at severity 3, motion blur, noise and JPEG at severity 5, and 3 combined conditions, giving **15 conditions** on COD10K for A, R, B, C, D, E and SINet-V2. The original 28-condition grid would take about 45 hours (D-035).
+- Native protocol: 10 conditions for A, SINet-V2, B and E.
+- `camo/scripts/evaluate_all.ps1` runs everything, most important first. It's safe to rerun.
+- BiRefNet-COD was dropped and its files deleted (D-033).
 
 **Metrics**
 - **Score two versions of every prediction: raw probabilities, and min-max stretched.** SAM2-UNet's `test.py` line 41 stretches every map, so stretched scores are only for comparing with papers. Dice, IoU and MAE on raw probabilities are the honest numbers.
@@ -560,16 +561,15 @@ SAM2-UNet reference from VFM-CV: 0.831 clean, noise 0.827 / 0.802 / 0.768, motio
 - **Gate 2:** every measure tracked its damage on 100 validation images, with |rho| of 0.84 to 1.00.
 - **Gate 3:** arm E uses 5.3 GB at batch 6 and 1.0 it/s, so 8 epochs take about 1.7 hours with validation.
 
-Overnight training started at 01:12 on Nov 3, in the order B, E, D, C. Rerun `camo/scripts/train_all.ps1` to resume if it stops. This is ahead of the day plan in Section 6.
+Training finished at 05:53 on Nov 3 (D-034). The final test evaluation started at 06:14 and should take about 12.5 hours (D-035). Rerun `camo/scripts/evaluate_all.ps1` to resume if it stops. This is ahead of the day plan in Section 6.
 
 ### If you fall behind, cut in this order
 1. Held-out corruption test
-2. BiRefNet
-3. Three-answer presence output, then the trained presence head
-4. Arm C
-5. NC4K, keeping CAMO and MoCA-Mask
-6. Severity levels, keeping s=3 and combined conditions
-7. Arm D last, because E vs B alone can't show whether the cues or the gate caused any gain
+2. Three-answer presence output, then the trained presence head
+3. Arm C
+4. NC4K, keeping CAMO and MoCA-Mask
+5. Severity levels, keeping s=3 and combined conditions
+6. Arm D last, because E vs B alone can't show whether the cues or the gate caused any gain
 
 **Never cut:** the 2 x 2 measurement test, A vs B vs E, the gate figure, the demo.
 

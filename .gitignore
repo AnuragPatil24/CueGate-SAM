@@ -7,3 +7,7 @@ camo/weights/
 camo/third_party/
 camo/results/train.log
 camo/results/training_done
+
+camo/results/evaluate.log
+camo/results/evaluation_done
+camo/results/test_*_images/

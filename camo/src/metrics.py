@@ -32,6 +32,12 @@ def smeasure(prob, gt):
     return float(metric.get_results()["sm"])
 
 
+def presence_score(prob):
+    """Mean of the top 1% of pixels: high when the model is sure of some region."""
+    k = max(1, prob.size // 100)
+    return float(np.partition(prob.ravel(), -k)[-k:].mean())
+
+
 def image_scores(prob, gt):
     """All scores for one image, plus how confident the raw prediction was."""
     raw = binary_scores(prob, gt)
@@ -40,4 +46,5 @@ def image_scores(prob, gt):
         "dice_raw": raw[0], "iou_raw": raw[1], "mae_raw": raw[2],
         "dice_stretched": fit[0], "iou_stretched": fit[1], "mae_stretched": fit[2],
         "sm": smeasure(prob, gt), "peak_prob": float(prob.max()),
+        "top1": presence_score(prob),
     }

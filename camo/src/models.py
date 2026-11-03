@@ -58,5 +58,21 @@ def load_arm(arm):
     return load
 
 
-LOADERS = {"sam2unet": load_sam2unet, "sinet": load_sinet,
+def load_restored(device, ckpt=None):
+    """Arm R: rule-based classical restoration, then the published SAM2-UNet."""
+    from cuegate import MEAN, STD, load_q_stats
+    from restore import restore
+    net = new_sam2unet(ckpt).to(device).eval()
+    mean = torch.tensor(MEAN, device=device).view(1, 3, 1, 1)
+    std = torch.tensor(STD, device=device).view(1, 3, 1, 1)
+    q_mean, q_std = (torch.tensor(v, device=device)
+                     for v in load_q_stats(os.path.join(ROOT, "results", "q_stats.json")))
+
+    def forward(x):
+        rgb = restore((x * std + mean).clamp(0, 1), q_mean, q_std)
+        return net((rgb - mean) / std)[0]
+    return forward
+
+
+LOADERS = {"sam2unet": load_sam2unet, "sinet": load_sinet, "arm_R": load_restored,
            **{f"arm_{a}": load_arm(a) for a in "BCDE"}}

@@ -12,6 +12,8 @@ Quick speed test:
 """
 import argparse
 import csv
+import ctypes
+import glob
 import os
 import sys
 import time
@@ -31,59 +33,71 @@ from models import LOADERS
 MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
 STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
 SCORES = ["dice_raw", "iou_raw", "mae_raw", "dice_stretched", "iou_stretched",
-          "mae_stretched", "sm", "peak_prob"]
+          "mae_stretched", "sm", "peak_prob", "top1"]
+FOLDERS = {"Imgs": "GT", "Image": "GT_Object"}     # image folder: mask folder
 FIELDS = ["model", "protocol", "corruption", "severity", "images"] + SCORES + ["img_per_s"]
 
 
 def list_images(data_root, subset):
-    """Return sorted (image, mask) paths, optionally a fixed random subset."""
-    img_dir, gt_dir = os.path.join(data_root, "Imgs"), os.path.join(data_root, "GT")
-    pairs = []
-    for f in sorted(os.listdir(img_dir)):
-        gt = os.path.join(gt_dir, os.path.splitext(f)[0] + ".png")
-        assert os.path.exists(gt), f"missing mask for {f}"
-        pairs.append((os.path.join(img_dir, f), gt))
-    if subset and subset < len(pairs):
-        keep = np.random.default_rng(604).choice(len(pairs), subset, replace=False)
-        pairs = [pairs[i] for i in sorted(keep)]
-    return pairs
+    """Return sorted (name, image, mask) triples, optionally a fixed random subset.
+
+    Finds every image folder under data_root, so per-video datasets work too.
+    Their names keep the video, because frame names repeat between videos.
+    """
+    items = []
+    for img_folder, gt_folder in FOLDERS.items():
+        for img_dir in sorted(glob.glob(os.path.join(data_root, "**", img_folder), recursive=True)):
+            parent = os.path.dirname(img_dir)
+            video = os.path.relpath(parent, data_root).replace(os.sep, "/")
+            for f in sorted(os.listdir(img_dir)):
+                gt = os.path.join(parent, gt_folder, os.path.splitext(f)[0] + ".png")
+                assert os.path.exists(gt), f"missing mask for {f}"
+                name = f if video == "." else f"{video}/{f}"
+                items.append((name, os.path.join(img_dir, f), gt))
+    if subset and subset < len(items):
+        keep = np.random.default_rng(604).choice(len(items), subset, replace=False)
+        items = [items[i] for i in sorted(keep)]
+    return items
 
 
-def load_sample(pair, corruption, severity, protocol):
-    """Read one pair from disk and apply the damage. Runs in a worker thread."""
-    img_path, gt_path = pair
+def load_sample(item, corruption, severity, protocol):
+    """Read one image from disk and apply the damage. Runs in a worker thread."""
+    name, img_path, gt_path = item
     rgb = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     gt = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE) > 127
-    name = os.path.basename(img_path)
     seed = image_seed(name, corruption, severity)
     return name, apply_protocol(rgb, corruption, severity, seed, protocol), gt
 
 
 @torch.inference_mode()
-def predict(net, rgb, size, device):
+def predict(net, rgbs, sizes, device):
     """Follow the official test code: upsample logits, then apply the sigmoid."""
-    x = torch.from_numpy(rgb.copy()).permute(2, 0, 1)[None].float() / 255.0
-    x = ((x - MEAN) / STD).to(device)
-    logits = F.interpolate(net(x), size=size, mode="bilinear", align_corners=False)
-    return logits.sigmoid().squeeze().float().cpu().numpy()
+    x = torch.from_numpy(np.stack(rgbs)).permute(0, 3, 1, 2).float() / 255.0
+    logits = net(((x - MEAN) / STD).to(device))
+    return [F.interpolate(l[None], size=s, mode="bilinear", align_corners=False)
+            .sigmoid().squeeze().float().cpu().numpy() for l, s in zip(logits, sizes)]
 
 
-def run_condition(net, pairs, corruption, severity, protocol, device, workers):
+def run_condition(net, items, corruption, severity, protocol, device, workers, batch):
     """Score every image under one condition. Returns per-image rows and speed."""
     rows = []
     start = time.time()
     with ThreadPoolExecutor(workers) as pool:
-        jobs = (pool.submit(load_sample, p, corruption, severity, protocol) for p in pairs)
+        def flush(samples):
+            names, rgbs, gts = zip(*samples)
+            probs = predict(net, rgbs, [g.shape for g in gts], device)
+            rows.extend({"image": n, **s} for n, s in zip(names, pool.map(image_scores, probs, gts)))
+
+        jobs = (pool.submit(load_sample, i, corruption, severity, protocol) for i in items)
         pending = []
         for job in jobs:
             pending.append(job)
-            if len(pending) < workers * 2:
-                continue
-            name, rgb, gt = pending.pop(0).result()
-            rows.append({"image": name, **image_scores(predict(net, rgb, gt.shape, device), gt)})
-        for job in pending:
-            name, rgb, gt = job.result()
-            rows.append({"image": name, **image_scores(predict(net, rgb, gt.shape, device), gt)})
+            if len(pending) >= batch * 2:
+                flush([j.result() for j in pending[:batch]])
+                del pending[:batch]
+        while pending:
+            flush([j.result() for j in pending[:batch]])
+            del pending[:batch]
     return rows, len(rows) / (time.time() - start)
 
 
@@ -106,11 +120,14 @@ def main():
     ap.add_argument("--combined", action="store_true", help="also run drone, night and cctv")
     ap.add_argument("--subset", type=int, default=0, help="0 means all images")
     ap.add_argument("--workers", type=int, default=6)
+    ap.add_argument("--batch", type=int, default=8)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
+    # Ask Windows not to sleep while this process runs. It ends when the run ends.
+    ctypes.windll.kernel32.SetThreadExecutionState(0x80000001)
     device = torch.device("cuda")
-    pairs = list_images(args.data, args.subset)
+    items = list_images(args.data, args.subset)
     conditions = [("clean", 0)] + [(c, s) for c in args.corruptions for s in args.severities]
     if args.combined:
         conditions += [(c, 0) for c in COMBINED]
@@ -128,8 +145,8 @@ def main():
                 for corruption, severity in conditions:
                     if (model, protocol, corruption, severity) in done:
                         continue
-                    rows, speed = run_condition(net, pairs, corruption, severity, protocol,
-                                                device, args.workers)
+                    rows, speed = run_condition(net, items, corruption, severity, protocol,
+                                                device, args.workers, args.batch)
                     tag = f"{model}_{protocol}_{corruption}_{severity}"
                     with open(os.path.join(args.out[:-4] + "_images", tag + ".csv"), "w",
                               newline="") as g:

@@ -1,0 +1,2 @@
+model,protocol,corruption,severity,images,dice_raw,iou_raw,mae_raw,dice_stretched,iou_stretched,mae_stretched,sm,peak_prob,top1,img_per_s
+arm_E,input,clean,0,2026,0.8334,0.7503,0.0228,0.8334,0.7503,0.0228,0.8816,0.999,0.9696,9.8

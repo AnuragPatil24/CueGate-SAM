@@ -352,6 +352,36 @@ Papers were downloaded and their text searched. "Key sections" means I read the 
 - **Kept out of git:** data, weights, third-party code and `Notes/`. The lecture notes are course material, so they shouldn't go to a public GitHub repo.
 - **Necessity:** Saves about 9 GB, and keeps the repo small enough to submit.
 
+### D-034: Training finished, and the checkpoints are frozen
+- **Status:** Active.
+- **Result:** All four arms finished 8 epochs by 05:53 on Nov 3, about 4 h 40 min in total. Best validation mean Dice, against 0.7132 for the untrained model: B 0.7672 (epoch 7), C 0.7747 (epoch 6), D 0.7732 (epoch 7), E 0.7747 (epoch 7).
+- **Warning:** The detail-only arm C ties E on validation. If that holds on the test set, the cues help but the gate does not, which is row 2 of the outcome table in `plan.md` Section 4.8. It would be reported that way.
+- **Proof:** `camo/results/train_{B,C,D,E}.csv`.
+- **Deleted:** The four `last.pth` files, 3.4 GB of resume state that a finished run no longer needs. `best.pth` stays.
+- **Necessity:** The test-set rule in `plan.md` Section 4.7 needs the checkpoints fixed before any test image is scored.
+
+### D-035: Replace the 28-condition grid with a prioritised one
+- **Status:** Active. Replaces the grid in `plan.md` Section 4.7.
+- **Decision:** On COD10K, score clean, all 8 corruptions at severity 3, motion blur, noise and JPEG at severity 5, and the 3 combined conditions: 15 conditions under the input protocol, for A, R, B, C, D, E and SINet-V2. Under the native protocol, score 10 conditions for A, SINet-V2, B and E. CAMO repeats the input grid without SINet-V2. NC4K uses clean and the combined conditions for A, B and E. MoCA-Mask uses A, B, C and E. C joins MoCA because it tied E on validation.
+- **Reason:** The full grid is 56,728 images per model, or about 45 hours for seven models. The chosen grid takes about 12.5 hours, and runs the A, B, E comparison first so that a stoppage loses the least.
+- **Cost:** Severities 1 and 2 are dropped from the test set, and severity 5 is only tested on three corruptions. Severity-curve figures use the gate response, not Dice, for the other corruptions.
+- **Speed change:** `benchmark.py` now batches inference, from 7.6 to about 10 images/s. Proof that scores don't change: SAM2-UNet on the Gate 1 subset still gives clean Dice 0.819.
+- **Necessity:** The report needs final tables on all 2,026 images by Nov 6.
+
+### D-036: Arm R uses the most cautious rules that validation allows
+- **Status:** Active.
+- **Decision:** `TAU = 1.5`, median size 3. A median filter, gamma correction and unsharp masking each run only when a quality measure passes the threshold. All of them come from the course.
+- **Proof:** `camo/scripts/tune_restore.py` on 150 validation images. Mean Dice over the 7 conditions: tau 0 gives 0.668, 0.5 gives 0.677, 1.0 gives 0.679, 1.5 gives 0.685, with median 3. Median 5 is worse except at tau 1.5, where the two tie, and 3 is the gentler choice.
+- **Reading:** Score rises as restoration runs less often. That suggests rule-based restoration removes evidence the model uses, but 1.5 was the top of the grid, so this isn't proven. The test set decides.
+- **Limit:** Only tau and median size were tuned. The gamma target and unsharp settings are fixed, so a report can say "a simple rule-based pipeline", not "classical restoration fails".
+- **Necessity:** Arm R answers the obvious question: why not clean the image first? Its settings must not come from the test set.
+
+### D-037: Presence score and evaluation layout
+- **Status:** Active.
+- **Decision:** `metrics.py` now also stores `top1`, the mean of the top 1% of pixels, for every image. Positives come from the COD10K run, and negatives from the 1,974 non-camouflaged test images, reported separately for 784 backgrounds and 1,190 visible animals.
+- **Fact:** All 4,691 MoCA-Mask masks contain an object, so no frames need excluding.
+- **Necessity:** Storing `top1` during the main run avoids a second pass over the positives.
+
 ---
 
 ## D. Open questions
