@@ -387,7 +387,7 @@ Papers were downloaded and their text searched. "Key sections" means I read the 
 - **Proof:** `camo/results/tables/*.csv` from `analyze.py`, and figures in `camo/results/figures`. All CIs are paired bootstraps (10,000 resamples). MoCA resamples whole videos.
 - **COD10K input, mean over 14 damaged conditions:** B − A +0.050 [0.047, 0.052]. R − A −0.0015 [−0.003, −0.000]. C, D and E − B are all about +0.005, with intervals above zero. E − C −0.000 and E − D +0.000, both with intervals spanning zero. Clean Dice: A 0.832, E 0.833.
 - **CAMO:** E − B +0.0055 [0.003, 0.008], E − C +0.005 [0.002, 0.008], E − D +0.004 [0.001, 0.007]. **NC4K:** E − B +0.006 [0.005, 0.008].
-- **Native protocol:** A keeps 0.956 of clean Dice, against 0.817 under input. B − A +0.016. E − B −0.001 [−0.002, −0.000].
+- **Native protocol:** A keeps 0.956 of clean Dice, against 0.742 under input on the same 9 conditions. Corrected on Nov 3: an earlier version compared this with 0.817, which was averaged over 14 conditions. B − A +0.016. E − B −0.001 [−0.002, −0.000].
 - **MoCA-Mask:** B − A +0.020 [0.007, 0.034]. On the blurriest quartile, +0.035 [0.015, 0.058]. E − B +0.0005, with an interval spanning zero.
 - **Gate explanation:** colour weight rises from 0.20 to 0.45 with JPEG severity. Removing the colour cue costs the most under JPEG (−0.015), drone (−0.021), night (−0.025) and CCTV (−0.027). Structure matches too. Detail doesn't: the gate raises it under blur and darkening, but removing it changes almost nothing.
 - **Presence:** against backgrounds, AUROC is 0.92 to 0.93 on clean images. At night it's 0.76 for E, against 0.63 for A. Against visible animals it's about 0.1 to 0.3, so the models find animals, not camouflage.
