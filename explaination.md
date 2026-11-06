@@ -375,5 +375,5 @@ Our gate is also an adaptive fusion of several cues, but its weights come from *
 1. **The report,** in the CVPR 2022 template, due **Nov 6**. All tables and figures are ready.
 2. **The slides,** for Nov 7 and 8.
 3. **A repeat novelty search,** and checking the CIRCOD details against its paper.
-4. **GitHub:** create the repository and push it yourself. The write-up needs the link.
+4. **GitHub:** done. The repository is https://github.com/AnuragPatil24/CueGate-SAM. Put this link in the write-up.
 5. **Practise the demo.**

@@ -1,6 +1,6 @@
 # CueGate-SAM: camouflaged animal detection in poor-quality footage
 
-EE604 Image Processing course project, IIT Kanpur, 2026.
+EE604 Image Processing course project, IIT Kanpur, 2026. Code and results: https://github.com/AnuragPatil24/CueGate-SAM
 
 Camouflage detectors are tested on clean photos, but real cameras such as drones, CCTV and night cameras give blurry, noisy, dark and compressed images. This project does two things:
 
